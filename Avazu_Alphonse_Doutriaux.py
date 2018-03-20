@@ -8,25 +8,11 @@ import datetime
 
 warnings.filterwarnings('ignore')
 
-
-# In[60]:
-
-
-from sklearn.model_selection import train_test_split, GridSearchCV, KFold, cross_val_score
-from sklearn.metrics import confusion_matrix, roc_auc_score, log_loss, accuracy_score
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
-from sklearn.datasets import make_classification
-
-from joblib import Parallel, delayed
-from matplotlib import pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
 from datetime import date, datetime
-from collections import Counter
-from imblearn.over_sampling import SMOTE, ADASYN
 from xgboost import XGBClassifier
-
 
 # 1. Preprocessing
 
@@ -61,7 +47,6 @@ df_full_columns = pd.read_csv("train.gz", usecols=columns_to_encode)
 for col in columns_to_encode:
     X[col] = X[col].astype('category', categories = df_full_columns[col].unique().tolist())
 X = pd.get_dummies(X, columns=columns_to_encode, prefix = columns_to_encode)
-
 
 # 1.4. Folding
 
@@ -102,7 +87,6 @@ rf_preds = rf.predict_proba(X_test)
 
 preds_table = pd.DataFrame({"LR":lr_preds[:,1], "XGBoost":xgb_preds[:,1], "RandomForests":rf_preds[:,1]}, index=X_test.index)
 
-
 # We use a LogisiticRegression to determine how to blend the models predictions
 
 lr_blending = LogisticRegression(penalty='l1',
@@ -110,7 +94,6 @@ lr_blending = LogisticRegression(penalty='l1',
                                  C=0.5,
                                  verbose=2)
 lr_blending.fit(preds_table, y_test)
-
 
 # 5. Predictions on test.gz
 
@@ -140,7 +123,6 @@ xgb_preds_test = xgb.predict_proba(test)
 rf_preds_test = rf.predict_proba(test)
 
 preds_table_final = pd.DataFrame({"LR":lr_preds_test[:,1], "XGBoost":xgb_preds_test[:,1], "RandomForests":rf_preds_test[:,1]}, index=test.index)
-
 
 # 5.2. Export for the evaluation on kaggle.com
 
